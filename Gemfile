@@ -56,4 +56,4 @@ group :test do
 end
 
 # remove after the feature branch has been merged into rapid7/rex-text
-gem 'rex-text', git: 'https://github.com/zeroSteiner/rex-text', branch: 'feat/block-api-iv'
+gem 'rex-text', git: 'https://github.com/dledda-r7/rex-text', branch: 'feat/block-api-iv'
