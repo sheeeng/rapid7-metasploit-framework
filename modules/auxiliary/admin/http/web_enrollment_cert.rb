@@ -139,12 +139,12 @@ class MetasploitModule < Msf::Auxiliary
         print_status('***Templates with CT_FLAG_MACHINE_TYPE set like Machine and DomainController will not display as available, even if they are.***')
         print_good("Available Certificates for #{connection_identity} on #{datastore['RHOST']}: #{cert_templates.join(', ')}")
         if datastore['MODE'] == 'ALL'
-          retrieve_certs(target_ip, http_client, connection_identity, cert_templates)
+          retrieve_certs(http_client, connection_identity, cert_templates)
         end
       end
     when 'SPECIFIC_TEMPLATE'
       cert_template = datastore['CERT_TEMPLATE']
-      retrieve_cert(target_ip, http_client, connection_identity, cert_template)
+      retrieve_cert(http_client, connection_identity, cert_template)
     end
   end
 
