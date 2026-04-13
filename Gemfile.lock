@@ -44,7 +44,7 @@ PATH
       lru_redux
       metasm
       metasploit-concern
-      metasploit-credential
+      metasploit-credential (>= 6.0.21)
       metasploit-model
       metasploit-payloads (= 2.0.245)
       metasploit_data_models (>= 6.0.15)
