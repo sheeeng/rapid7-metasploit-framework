@@ -259,6 +259,12 @@ class PayloadCachedSize
     elsif adapted_arch == ARCH_X86 || mod.arch_to_s == ARCH_X86
       opts['Options'].merge!(OPTS_ARCH_X86)
     end
+
+    # if the module is a meterpreter stageless payload, ensure the MeterpreterDebugBuild is set to false.
+    if mod.refname =~ /meterpreter_/
+      opts['Options']['MeterpreterDebugBuild'] = false
+    end
+
     opts
   end
 end
