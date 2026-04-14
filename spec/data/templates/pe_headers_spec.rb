@@ -54,15 +54,10 @@ RSpec.describe 'PE template binaries' do
           expect(actual).to eq([expected_major, expected_minor])
         end
 
-        # The PE32+ optional header struct in rex-bin_tools 0.1.15 has a typo:
-        # `MajorOperatingsystemVersion` (lowercase 's') instead of
-        # `MajorOperatingSystemVersion`. That makes field access inconsistent
-        # between PE32 and PE32+ binaries, so the OS version check is disabled
-        # until the upstream struct is fixed.
-        # it "has OS version #{expected_major}.#{expected_minor}" do
-        #   actual = [pe.hdr.opt.MajorOperatingSystemVersion, pe.hdr.opt.MinorOperatingSystemVersion]
-        #   expect(actual).to eq([expected_major, expected_minor])
-        # end
+        it "has OS version #{expected_major}.#{expected_minor}" do
+          actual = [pe.hdr.opt.MajorOperatingSystemVersion, pe.hdr.opt.MinorOperatingSystemVersion]
+          expect(actual).to eq([expected_major, expected_minor])
+        end
       end
     end
   end
