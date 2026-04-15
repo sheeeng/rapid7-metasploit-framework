@@ -145,14 +145,14 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def vuln_version?(version)
-    vprint_status("Detected build version is #{version}")
+    print_status("Detected build version is #{version}")
 
     if version == '2.9.0' || Rex::Version.new(version) < Rex::Version.new('2.8.1')
-      vprint_status('Version is vulnerable')
+      print_status('Version is vulnerable')
       return true
     end
 
-    vprint_warning('Version is not vulnerable')
+    print_warning('Version is not vulnerable')
     false
   end
 
