@@ -22,7 +22,7 @@ module Msf::Payload::Windows
   #
   # ROR hash associations for some of the exit technique routines.
 
-  def exitfunc_helper(type)
+  def self.exitfunc_helper(type)
     iv = 0 if block_api_iv.nil?
     case type
     when 'seh'
@@ -36,10 +36,8 @@ module Msf::Payload::Windows
     else
       return 0
     end
-
-
-
   end
+
   @@exit_types =
     {
       nil       => exitfunc_helper(nil),          # Default to nothing
