@@ -908,14 +908,6 @@ module Msf
               print_status("No payload configured, defaulting to #{chosen_payload}") if chosen_payload
             end
 
-            # Choose a default encoder when the module is used, not run
-            if mod.datastore['ENCODER']
-              print_status("Using configured encoder #{mod.datastore['ENCODER']}")
-            elsif dispatcher.respond_to?(:choose_encoder)
-              chosen_encoder = dispatcher.choose_encoder(mod) 
-              print_status("No encoder configured, defaulting to #{chosen_encoder}") if chosen_encoder
-            end
-
             if framework.features.enabled?(Msf::FeatureManager::DISPLAY_MODULE_ACTION) && mod.respond_to?(:actions) && mod.actions.size > 1
               print_status "Setting default action %grn#{mod.action.name}%clr - view all #{mod.actions.size} actions with the %grnshow actions%clr command"
             end
@@ -1112,7 +1104,7 @@ module Msf
               wlog(log_msg)
             end
 
-            self.driver.run_single('reload')
+            self.driver.run_single('reload') if self.driver.active_module
             self.driver.run_single("banner")
           end
 
@@ -1521,7 +1513,7 @@ module Msf
 
               show_module_metadata('Compatible Payloads', @@payload_show_results)
             else
-              # show_module_set(‘Payloads’, framework.payloads, regex, minrank, opts)
+              # show_module_set('Payloads', framework.payloads, regex, minrank, opts)
               show_module_metadata('Payloads', 'payload')
             end
           end
@@ -1627,18 +1619,21 @@ module Msf
               'Postfix' => "\n",
               'Columns' => columns
             )
-            [
-              [ 'ConsoleLogging', framework.datastore['ConsoleLogging'] || "false", 'Log all console input and output' ],
-              [ 'LogLevel', framework.datastore['LogLevel'] || "0", 'Verbosity of logs (default 0, max 3)' ],
-              [ 'MinimumRank', framework.datastore['MinimumRank'] || "0", 'The minimum rank of exploits that will run without explicit confirmation' ],
-              [ 'SessionLogging', framework.datastore['SessionLogging'] || "false", 'Log all input and output for sessions' ],
-              [ 'SessionTlvLogging', framework.datastore['SessionTlvLogging'] || "false", 'Log all incoming and outgoing TLV packets' ],
-              [ 'TimestampOutput', framework.datastore['TimestampOutput'] || "false", 'Prefix all console output with a timestamp' ],
-              [ 'Prompt', framework.datastore['Prompt'] || Msf::Ui::Console::Driver::DefaultPrompt.to_s.gsub(/%.../,"") , "The prompt string" ],
-              [ 'PromptChar', framework.datastore['PromptChar'] || Msf::Ui::Console::Driver::DefaultPromptChar.to_s.gsub(/%.../,""), "The prompt character" ],
-              [ 'PromptTimeFormat', framework.datastore['PromptTimeFormat'] || Time::DATE_FORMATS[:db].to_s, 'Format for timestamp escapes in prompts' ],
-              [ 'MeterpreterPrompt', framework.datastore['MeterpreterPrompt'] || '%undmeterpreter%clr', 'The meterpreter prompt string' ],
-            ].each { |r| tbl << r }
+
+            # Display-only defaults for options whose actual defaults are managed
+            # by the UI layer (driver prompt constants, time format, etc.)
+            computed_defaults = {
+              'Prompt'            => Msf::Ui::Console::Driver::DefaultPrompt.to_s.gsub(/%.../, ''),
+              'PromptChar'        => Msf::Ui::Console::Driver::DefaultPromptChar.to_s.gsub(/%.../, ''),
+              'PromptTimeFormat'  => Time::DATE_FORMATS[:db].to_s,
+              'MeterpreterPrompt' => '%undmeterpreter%clr',
+            }
+
+            Msf::DataStore::GLOBAL_OPTION_DEFINITIONS.each_option do |name, opt|
+              val = framework.datastore[name]
+              display_value = val.nil? ? (opt.default.nil? ? '' : opt.default.to_s) : val.to_s
+              tbl << [ name, display_value, opt.desc ]
+            end
 
             print(tbl.to_s)
           end
@@ -1680,24 +1675,6 @@ module Msf
                 print("\nPayload advanced options (#{mod.datastore['PAYLOAD']}):\n\n#{p_opt}\n") if (p_opt and p_opt.length > 0)
               end
             end
-
-            if ((mod.exploit? or mod.evasion? or mod.payload?) and mod.datastore['ENCODER'])
-              e = framework.encoders.create(mod.datastore['ENCODER'])
-
-              if (!e)
-                print_error("Invalid encoder defined: #{mod.datastore['ENCODER']}\n")
-                return
-              end
-
-              e.share_datastore(mod.datastore)
-
-              if (e)
-                e_opt = Serializer::ReadableText.dump_advanced_options(e, '   ')
-                print("\nEncoder advanced options (#{mod.datastore['ENCODER']}):\n\n#{e_opt}\n") if (e_opt and e_opt.length > 0)
-              end
-            end
-
-
             print("\nView the full module info with the #{Msf::Ui::Tip.highlight('info')}, or #{Msf::Ui::Tip.highlight('info -d')} command.\n\n")
           end
 

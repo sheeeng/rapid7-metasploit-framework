@@ -1640,6 +1640,12 @@ class Core
               print_line(output) if output
             when 'mssql', 'postgresql', 'mysql'
               session.run_cmd(cmd, driver.output)
+            when 'hwbridge'
+              if session.respond_to?(:console) && session.console
+                session.console.run_single(cmd)
+              else
+                print_error("Session #{s} has no hwbridge console; skipping...")
+              end
             end
           ensure
             # Restore timeout for each session
@@ -2189,25 +2195,6 @@ class Core
         value = mod.first
       end
     end
-
-    # Set ENCODER
-    if name.upcase == 'ENCODER' && active_module && active_module.exploit? && !clear
-      value = trim_path(value, 'encoder')
-
-      payload = active_module.framework.payloads.create(datastore['PAYLOAD'])
-      
-      unless payload
-        print_error("Please set a valid PAYLOAD before setting the ENCODER.")
-        return false
-      end
-
-      index_from_list(payload.compatible_encoders, value) do |mod|
-        return false unless mod && mod.respond_to?(:first)
-        # [name, class] from compatible_encoders
-        value = mod.first
-      end
-    end
-
 
     unless global || valid_options.any? { |vo| vo.casecmp?(name) }
       message = "Unknown datastore option: #{name}."
