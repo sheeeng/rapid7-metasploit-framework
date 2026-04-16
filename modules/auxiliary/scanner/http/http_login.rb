@@ -20,7 +20,7 @@ class MetasploitModule < Msf::Auxiliary
         This module attempts to authenticate to HTTP services that
         require Basic, Digest, or WebDAV authentication.
         It will probe URIs to identify endpoints requiring authentication (HTTP 401)
-        and then perform brute-force the login.
+        and then perform brute-force login attempts.
       },
       'Author' => [ 'hdm' ],
       'References' => [
