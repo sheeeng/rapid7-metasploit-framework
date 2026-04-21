@@ -177,6 +177,7 @@ class MetasploitModule < Msf::Auxiliary
 
     # Each result contains 0 or more arrays containing: SID Type, Name, RID
     results.compact.each do |result_set|
+      next unless result_set.respond_to?(:each)
       result_set.each { |result| sids_table << result }
     end
 
