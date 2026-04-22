@@ -153,19 +153,19 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def smb_description(info)
-    desc = "SMB Detected (versions:#{info[:versions].join(', ')}) (preferred dialect:#{info[:preferred_dialect]})"
+    desc = "SMB Detected (versions: #{info[:versions].join(', ')}) (preferred dialect: #{info[:preferred_dialect]})"
     info[:capabilities].each do |name, values|
-      desc << " (#{name} capabilities:#{values.join(', ')})"
+      desc << " (#{name} capabilities: #{values.join(', ')})"
     end
 
     if info[:signing_required]
-      desc << ' (signatures:required)'
+      desc << ' (signatures: required)'
     else
-      desc << ' (signatures:optional)'
+      desc << ' (signatures: optional)'
     end
-    desc << " (uptime:#{info[:uptime]})" if info[:uptime]
-    desc << " (guid:#{Rex::Text.to_guid(info[:server_guid])})" if info[:server_guid]
-    desc << " (authentication domain:#{info[:auth_domain]})" if info[:auth_domain]
+    desc << " (uptime: #{info[:uptime]})" if info[:uptime]
+    desc << " (guid: #{Rex::Text.to_guid(info[:server_guid])})" if info[:server_guid]
+    desc << " (authentication domain: #{info[:auth_domain]})" if info[:auth_domain]
 
     desc
   end
@@ -213,13 +213,13 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     if !res['build'].to_s.empty?
-      words << " (build:#{res['build']})"
+      words << " (build: #{res['build']})"
       nd_smb_fingerprint[:os_build] = res['build']
       nd_fingerprint_match['os.build'] = res['build']
     end
 
     if !res['lang'].to_s.empty? && res['lang'] != 'Unknown'
-      words << " (language:#{res['lang']})"
+      words << " (language: #{res['lang']})"
       nd_smb_fingerprint[:os_lang] = res['lang']
       nd_fingerprint_match['os.language'] = nd_smb_fingerprint[:os_lang]
     end
@@ -299,9 +299,11 @@ class MetasploitModule < Msf::Auxiliary
         if info[:os_name] && info[:os_name] != 'Unknown'
           smb_desc = smb_description(info)
           os_desc = "Host is running #{info[:os_name]}"
+          smb1_desc = smb1_fingerprint['native_lm'] ? "; #{smb1_fingerprint['native_lm']}" : ""
 
           lines << { type: :status, message: smb_desc }
           lines << { type: :good, message: "  #{os_desc}" }
+          lines << { type: :status, message: "  #{smb1_fingerprint['native_lm']}", verbose: true } if smb1_fingerprint['native_lm']
 
           unless info[:signing_required]
             lines << { type: :status, message: '  SMB signing is not required' }
@@ -322,7 +324,7 @@ class MetasploitModule < Msf::Auxiliary
             port: rport,
             proto: 'tcp',
             name: 'smb',
-            info: "#{smb_desc}; #{os_desc}"
+            info: "#{smb_desc}; #{os_desc}#{smb1_desc}"
           )
 
           # Report a fingerprint.match hash for name, domain, and language
